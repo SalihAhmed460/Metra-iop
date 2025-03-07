@@ -1,0 +1,248 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}My Profile - METRA{% endblock %}
+
+{% block content %}
+<section class="section-blue py-5">
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">My Profile</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Profile Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="card card-white border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="profile-img-container mb-3">
+                            {% if user.profile.image %}
+                                <img src="{{ user.profile.image.url }}" alt="{{ user.username }}" class="rounded-circle img-thumbnail shadow-sm" style="width: 150px; height: 150px; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'images/default-profile.png' %}" alt="{{ user.username }}" class="rounded-circle img-thumbnail shadow-sm" style="width: 150px; height: 150px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/150/f0f7ff/0d6efd?text={{ user.username|slice:':1'|upper }}'; this.onerror=null;">
+                            {% endif %}
+                        </div>
+                        <h5 class="gradient-text mb-1">{{ user.username }}</h5>
+                        <p class="text-muted mb-3">{{ user.email }}</p>
+                        <div class="d-grid mt-3">
+                            <a href="{% url 'users:profile_update' %}" class="btn btn-outline-primary hover-glow">
+                                <i class="fas fa-user-edit me-2"></i>Edit Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Menu -->
+                <div class="card card-white border-0 shadow-sm mt-4">
+                    <div class="list-group list-group-flush rounded-3">
+                        <a href="#" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a href="#orders" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-bag me-2"></i>My Orders
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-heart me-2"></i>Wishlist
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-address-book me-2"></i>Address Book
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cog me-2"></i>Account Settings
+                        </a>
+                        <a href="{% url 'users:logout' %}" class="list-group-item list-group-item-action text-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <!-- Welcome Card -->
+                <div class="card card-white border-0 shadow-sm mb-4 fade-in">
+                    <div class="card-body p-4">
+                        <h4 class="gradient-text mb-3">Welcome, {{ user.first_name|default:user.username }}!</h4>
+                        <p class="text-muted">From your account dashboard, you can view your recent orders, manage your shipping and billing addresses, and edit your password and account details.</p>
+                        
+                        <!-- Quick Stats -->
+                        <div class="row g-4 mt-3">
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm card-shine bg-primary text-white">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-shopping-bag fa-2x mb-3"></i>
+                                        <h5 class="fw-bold">{{ orders_count|default:"0" }}</h5>
+                                        <p class="mb-0">Total Orders</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm card-shine bg-primary text-white">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-shipping-fast fa-2x mb-3"></i>
+                                        <h5 class="fw-bold">{{ pending_count|default:"0" }}</h5>
+                                        <p class="mb-0">Pending Orders</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm card-shine bg-primary text-white">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-heart fa-2x mb-3"></i>
+                                        <h5 class="fw-bold">{{ wishlist_count|default:"0" }}</h5>
+                                        <p class="mb-0">Wishlist Items</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Orders -->
+                <div class="card card-white border-0 shadow-sm slide-up" id="orders">
+                    <div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
+                        <h4 class="gradient-text mb-0">Recent Orders</h4>
+                        <a href="#" class="btn btn-sm btn-outline-primary hover-glow">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-middle table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-4 py-3">Order ID</th>
+                                        <th class="py-3">Date</th>
+                                        <th class="text-center py-3">Status</th>
+                                        <th class="text-end py-3">Total</th>
+                                        <th class="text-end pe-4 py-3">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if orders %}
+                                        {% for order in orders %}
+                                            <tr>
+                                                <td class="ps-4">#{{ order.id }}</td>
+                                                <td>{{ order.created|date:"M d, Y" }}</td>
+                                                <td class="text-center">
+                                                    {% if order.status == 'Completed' %}
+                                                        <span class="badge bg-success">{{ order.status }}</span>
+                                                    {% elif order.status == 'Processing' %}
+                                                        <span class="badge bg-primary">{{ order.status }}</span>
+                                                    {% elif order.status == 'Shipped' %}
+                                                        <span class="badge bg-info">{{ order.status }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">{{ order.status }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">${{ order.total_cost }}</td>
+                                                <td class="text-end pe-4">
+                                                    <a href="#" class="btn btn-sm btn-outline-primary rounded-pill hover-glow">View</a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4">
+                                                <div class="py-3">
+                                                    <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                                                    <p class="mb-1">You haven't placed any orders yet.</p>
+                                                    <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-sm mt-2 hover-glow">
+                                                        <i class="fas fa-shopping-cart me-2"></i>Start Shopping
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% if orders %}
+                    <div class="card-footer bg-white text-center border-0 p-3">
+                        <a href="#" class="btn btn-outline-primary hover-glow">
+                            View All Orders <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Account Activity -->
+                <div class="card card-white border-0 shadow-sm mt-4 slide-up">
+                    <div class="card-header bg-white p-4 border-0">
+                        <h4 class="gradient-text mb-0">Recent Activity</h4>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item px-4 py-3 d-flex align-items-center">
+                                <div class="bg-primary rounded-circle text-white p-2 me-3">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0">You updated your profile information</p>
+                                    <small class="text-muted">2 days ago</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item px-4 py-3 d-flex align-items-center">
+                                <div class="bg-success rounded-circle text-white p-2 me-3">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0">Last login from new device</p>
+                                    <small class="text-muted">3 days ago</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item px-4 py-3 d-flex align-items-center">
+                                <div class="bg-info rounded-circle text-white p-2 me-3">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0">You added a product to your wishlist</p>
+                                    <small class="text-muted">5 days ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animations with delay
+        const fadeElements = document.querySelectorAll('.fade-in');
+        fadeElements.forEach((element, index) => {
+            setTimeout(() => {
+                element.classList.add('show');
+            }, 100 * index);
+        });
+        
+        const slideElements = document.querySelectorAll('.slide-up');
+        slideElements.forEach((element, index) => {
+            setTimeout(() => {
+                element.classList.add('show');
+            }, 300 + (100 * index));
+        });
+        
+        // Smooth scroll to sections
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

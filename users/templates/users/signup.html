@@ -1,0 +1,179 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Sign Up - METRA{% endblock %}
+
+{% block content %}
+<section class="section-blue py-5">
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Sign Up</li>
+            </ol>
+        </nav>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card card-white border-0 shadow-sm fade-in">
+                    <div class="card-header bg-white p-4 text-center border-0">
+                        <h3 class="gradient-text mb-0">Create Your Account</h3>
+                        <p class="text-muted mt-2">Join METRA for exclusive tech deals</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Signup Form -->
+                        <form method="post" data-validate>
+                            {% csrf_token %}
+                            
+                            <!-- Display form errors if any -->
+                            {% if form.errors %}
+                                <div class="alert alert-primary alert-dismissible fade show">
+                                    <p class="mb-0"><i class="fas fa-info-circle me-2"></i>Please correct the errors below.</p>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                                
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger">
+                                        {% for error in form.non_field_errors %}
+                                            <p class="mb-0">{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            
+                            <!-- Username Field -->
+                            <div class="mb-3 form-icon-group">
+                                <i class="fas fa-user"></i>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+                            </div>
+                            
+                            <!-- Email Field -->
+                            <div class="mb-3 form-icon-group">
+                                <i class="fas fa-envelope"></i>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">We'll never share your email with anyone else.</small>
+                            </div>
+                            
+                            <!-- Password Field -->
+                            <div class="mb-3 form-icon-group">
+                                <i class="fas fa-lock"></i>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Your password must be at least 8 characters and can't be entirely numeric.
+                                </small>
+                            </div>
+                            
+                            <!-- Password Confirmation Field -->
+                            <div class="mb-4 form-icon-group">
+                                <i class="fas fa-lock"></i>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Enter the same password as before, for verification.</small>
+                            </div>
+                            
+                            <!-- Terms Checkbox -->
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                </label>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg btn-shine">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </button>
+                            </div>
+                            
+                            <!-- Login Link -->
+                            <p class="text-center">
+                                Already have an account? <a href="{% url 'users:login' %}" class="text-decoration-none">Login</a>
+                            </p>
+                        </form>
+                    </div>
+                    
+                    <!-- Social Signup Section -->
+                    <div class="card-footer bg-white py-4 border-0">
+                        <p class="text-center mb-3">Or sign up with</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="#" class="btn btn-google" aria-label="Sign up with Google">
+                                <i class="fab fa-google"></i>
+                            </a>
+                            <a href="#" class="btn btn-facebook" aria-label="Sign up with Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="btn btn-twitter" aria-label="Sign up with Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Privacy Notice -->
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <i class="fas fa-shield-alt me-2"></i>Your data is protected by our privacy policy
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add proper attributes to form fields
+        const usernameField = document.querySelector('#id_username');
+        if (usernameField) {
+            usernameField.className = 'form-control';
+            usernameField.placeholder = 'Username';
+            usernameField.autocomplete = 'username';
+        }
+        
+        const emailField = document.querySelector('#id_email');
+        if (emailField) {
+            emailField.className = 'form-control';
+            emailField.placeholder = 'Email Address';
+            emailField.autocomplete = 'email';
+        }
+
+        const password1Field = document.querySelector('#id_password1');
+        if (password1Field) {
+            password1Field.className = 'form-control';
+            password1Field.placeholder = 'Password';
+            password1Field.autocomplete = 'new-password';
+        }
+
+        const password2Field = document.querySelector('#id_password2');
+        if (password2Field) {
+            password2Field.className = 'form-control';
+            password2Field.placeholder = 'Confirm Password';
+            password2Field.autocomplete = 'new-password';
+        }
+        
+        // Add animation to the form
+        const card = document.querySelector('.card');
+        if (card) {
+            setTimeout(() => {
+                card.classList.add('show');
+            }, 100);
+        }
+    });
+</script>
+{% endblock %}
