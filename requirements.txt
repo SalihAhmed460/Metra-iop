@@ -1,0 +1,9 @@
+Django==5.1.6
+Pillow==11.1.0
+asgiref==3.8.1
+sqlparse==0.5.3
+tzdata==2025.1
+djangorestframework==3.14.0
+matplotlib==3.8.3
+numpy==1.26.4
+requests==2.31.0
