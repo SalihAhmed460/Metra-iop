@@ -1,0 +1,344 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Products - METRA{% endblock %}
+
+{% block content %}
+<section class="section-blue py-5">
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'store:home' %}" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {% if current_category %}{{ current_category.name }}{% else %}All Products{% endif %}
+                </li>
+            </ol>
+        </nav>
+        
+        <!-- Page Title -->
+        <div class="mb-4 fade-in">
+            <h1 class="gradient-text mb-2">{% if current_category %}{{ current_category.name }}{% else %}All Products{% endif %}</h1>
+            <p class="text-muted mb-0">Showing {{ products.count }} products</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Filters Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="card card-white border-0 shadow-sm sticky-lg-top fade-in" style="top: 2rem;">
+                    <div class="card-header bg-white p-4 border-0">
+                        <h4 class="mb-0 fw-bold">Filters</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Category Filter -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">Categories</h6>
+                            <div class="nav flex-column">
+                                <a href="{% url 'store:product_list' %}" class="nav-link {% if not current_category %}text-primary fw-medium{% else %}text-dark{% endif %} px-0 py-2">
+                                    All Categories
+                                </a>
+                                {% for category in categories %}
+                                    <a href="{% url 'store:category_list' category.slug %}" class="nav-link {% if current_category and current_category.id == category.id %}text-primary fw-medium{% else %}text-dark{% endif %} px-0 py-2">
+                                        {{ category.name }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Price Range Filter -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">Price Range</h6>
+                            <form method="get" action="{% url 'store:product_list' %}">
+                                {% if current_category %}
+                                    <input type="hidden" name="category" value="{{ current_category.slug }}">
+                                {% endif %}
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-grid mt-2">
+                                    <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Availability Filter -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">Availability</h6>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="inStockOnly">
+                                <label class="form-check-label" for="inStockOnly">
+                                    In Stock Only
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Reset Filters Button -->
+                        <div class="d-grid mt-4">
+                            <a href="{% url 'store:product_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Reset Filters
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Section -->
+            <div class="col-lg-9">
+                <!-- Sort and View Options -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 slide-in">
+                    <!-- Sort Dropdown -->
+                    <div class="mb-3 mb-md-0">
+                        <form method="get" class="d-flex align-items-center sort-form">
+                            {% if current_category %}
+                                <input type="hidden" name="category" value="{{ current_category.slug }}">
+                            {% endif %}
+                            <label for="sort" class="me-2 text-muted">Sort by:</label>
+                            <select class="form-select form-select-sm" id="sort" name="sort" onchange="this.form.submit()">
+                                <option value="default" {% if request.GET.sort == 'default' or not request.GET.sort %}selected{% endif %}>Default</option>
+                                <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                                <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Newest First</option>
+                            </select>
+                        </form>
+                    </div>
+                    
+                    <!-- View Toggle -->
+                    <div class="view-toggle">
+                        <button id="gridViewBtn" class="btn btn-sm btn-outline-secondary active" title="Grid View">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button id="listViewBtn" class="btn btn-sm btn-outline-secondary" title="List View">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Product Grid -->
+                <div id="productsContainer" class="row g-4 infinite-container">
+                    {% for product in products %}
+                        <div class="col-md-6 col-lg-4 infinite-item slide-in" style="animation-delay: {{ forloop.counter0 }}00ms">
+                            <div class="card product-card h-100 card-shine">
+                                <div class="position-relative">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top" style="height: 200px; object-fit: contain;">
+                                    {% else %}
+                                        <img src="{% static 'images/no-image.png' %}" alt="No image available" class="card-img-top" style="height: 200px; object-fit: contain;">
+                                    {% endif %}
+                                    
+                                    {% if product.is_on_sale %}
+                                        <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 m-2 rounded-pill small">Sale {{ product.discount_percentage }}% Off</span>
+                                    {% endif %}
+                                    
+                                    {% if product.stock <= 0 %}
+                                        <span class="position-absolute top-0 end-0 bg-secondary text-white px-2 py-1 m-2 rounded-pill small">Out of Stock</span>
+                                    {% endif %}
+                                    
+                                    <button class="position-absolute bottom-0 end-0 btn btn-primary btn-sm m-2 quick-add-btn" data-product-id="{{ product.id }}" {% if product.stock <= 0 %}disabled{% endif %}>
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title mb-1">{{ product.name }}</h5>
+                                    <p class="text-muted small mb-2">{{ product.category.name }}</p>
+                                    
+                                    <!-- Rating -->
+                                    <div class="mb-2">
+                                        <div class="text-warning">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= product.average_rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <span class="text-muted ms-1 small">({{ product.reviews.count }})</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Short Description (Only visible in list view) -->
+                                    <p class="card-text mb-4 list-view-only d-none">{{ product.short_description|truncatechars:100 }}</p>
+                                    
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        <span class="product-price">
+                                            {% if product.is_on_sale %}
+                                                <span class="text-decoration-line-through text-muted me-1">${{ product.price }}</span>
+                                                <span class="text-danger">${{ product.sale_price }}</span>
+                                            {% else %}
+                                                ${{ product.price }}
+                                            {% endif %}
+                                        </span>
+                                        <a href="{{ product.get_absolute_url }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5 fade-in">
+                            <div class="mb-4">
+                                <i class="fas fa-search fa-3x text-muted"></i>
+                            </div>
+                            <h3 class="mb-3">No products found</h3>
+                            <p class="text-muted mb-4">We couldn't find any products matching your search criteria.</p>
+                            <a href="{% url 'store:product_list' %}" class="btn btn-primary">View All Products</a>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if products.has_other_pages %}
+                    <div class="pagination-container mt-5 text-center fade-in">
+                        <ul class="pagination justify-content-center">
+                            {% if products.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ products.previous_page_number }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for i in products.paginator.page_range %}
+                                {% if products.number == i %}
+                                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                {% elif i > products.number|add:'-3' and i < products.number|add:'3' %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if products.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <div class="infinite-more-link" style="display: none;">
+                            {% if products.has_next %}
+                                <a href="?page={{ products.next_page_number }}">More</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/infinite-loader.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Grid/List View Toggle
+        const gridViewBtn = document.getElementById('gridViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const productsContainer = document.getElementById('productsContainer');
+        const productItems = document.querySelectorAll('.infinite-item');
+        
+        // Switch to list view
+        listViewBtn.addEventListener('click', function() {
+            gridViewBtn.classList.remove('active');
+            listViewBtn.classList.add('active');
+            
+            // Change container layout
+            productsContainer.classList.add('list-view');
+            
+            // Adjust items for list view
+            productItems.forEach(item => {
+                item.classList.remove('col-md-6', 'col-lg-4');
+                item.classList.add('col-12', 'mb-3');
+                
+                // Show description in list view
+                const desc = item.querySelector('.list-view-only');
+                if (desc) desc.classList.remove('d-none');
+                
+                // Adjust card layout for list view
+                const card = item.querySelector('.card');
+                if (card) {
+                    card.classList.add('flex-row');
+                    const imgContainer = card.querySelector('.position-relative');
+                    if (imgContainer) imgContainer.style.width = '200px';
+                }
+            });
+
+            // Store view preference in localStorage
+            localStorage.setItem('viewMode', 'list');
+        });
+        
+        // Switch to grid view
+        gridViewBtn.addEventListener('click', function() {
+            listViewBtn.classList.remove('active');
+            gridViewBtn.classList.add('active');
+            
+            // Change container layout
+            productsContainer.classList.remove('list-view');
+            
+            // Reset items to grid view
+            productItems.forEach(item => {
+                item.classList.remove('col-12', 'mb-3');
+                item.classList.add('col-md-6', 'col-lg-4');
+                
+                // Hide description in grid view
+                const desc = item.querySelector('.list-view-only');
+                if (desc) desc.classList.add('d-none');
+                
+                // Reset card layout for grid view
+                const card = item.querySelector('.card');
+                if (card) {
+                    card.classList.remove('flex-row');
+                    const imgContainer = card.querySelector('.position-relative');
+                    if (imgContainer) imgContainer.style.width = '';
+                }
+            });
+
+            // Store view preference in localStorage
+            localStorage.setItem('viewMode', 'grid');
+        });
+        
+        // Check if user has a saved preference
+        const savedViewMode = localStorage.getItem('viewMode');
+        if (savedViewMode === 'list') {
+            listViewBtn.click();
+        }
+        
+        // Initialize Infinite Loader if pagination exists
+        if (document.querySelector('.pagination')) {
+            new InfiniteScroll({
+                container: '.infinite-container',
+                item: '.infinite-item',
+                pagination: '.pagination',
+                next: '.infinite-more-link a',
+                loadingText: 'Loading more products...',
+                finishedText: 'No more products to load',
+                onResponse: function(response) {
+                    // Apply current view mode to new items
+                    if (savedViewMode === 'list') {
+                        setTimeout(() => listViewBtn.click(), 100);
+                    }
+                    return response;
+                }
+            });
+        }
+        
+        // Initialize quick add buttons
+        document.querySelectorAll('.quick-add-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (window.cartManager) {
+                    window.cartManager.handleQuickAdd(e);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

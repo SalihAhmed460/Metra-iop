@@ -1,0 +1,56 @@
+{% load static %}
+
+<div class="cart-preview-header d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0 fw-bold">Your Cart</h6>
+    <span class="badge bg-primary rounded-pill">{{ cart.total_items }}</span>
+</div>
+
+{% if cart.items %}
+    <div class="cart-preview-items">
+        {% for item in cart.items %}
+            <div class="cart-item d-flex align-items-center py-2">
+                <a href="{{ item.product.get_absolute_url }}" class="cart-item-img me-3">
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="rounded" style="width: 50px; height: 50px; object-fit: contain;">
+                    {% else %}
+                        <img src="{% static 'images/no-image.png' %}" alt="No image" class="rounded" style="width: 50px; height: 50px; object-fit: contain;">
+                    {% endif %}
+                </a>
+                <div class="cart-item-details flex-grow-1">
+                    <h6 class="cart-item-title mb-0 small">
+                        <a href="{{ item.product.get_absolute_url }}" class="text-decoration-none text-truncate d-block">{{ item.product.name }}</a>
+                    </h6>
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <span class="cart-item-quantity text-muted small">{{ item.quantity }} × ${{ item.price }}</span>
+                        <span class="cart-item-price fw-medium">${{ item.total_price }}</span>
+                    </div>
+                </div>
+                <form method="post" action="{% url 'store:cart_remove' item.product.id %}" class="ms-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link p-0 text-danger" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="cart-preview-footer mt-3 pt-3 border-top">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span>Subtotal:</span>
+            <span class="fw-bold">${{ cart.subtotal }}</span>
+        </div>
+        <div class="d-grid gap-2">
+            <a href="{% url 'store:cart_detail' %}" class="btn btn-outline-primary">View Cart</a>
+            <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-shine">Checkout</a>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-4">
+        <div class="mb-3">
+            <i class="fas fa-shopping-cart fa-3x text-muted"></i>
+        </div>
+        <p class="mb-3">Your cart is empty</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-sm">Start Shopping</a>
+    </div>
+{% endif %}
