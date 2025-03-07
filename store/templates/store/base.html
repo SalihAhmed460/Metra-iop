@@ -1,0 +1,225 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}METRA - Online Tech Store{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <!-- Brand -->
+            <a class="navbar-brand gradient-text" href="{% url 'store:home' %}">
+                <i class="fas fa-microchip me-2"></i>METRA
+            </a>
+            
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Navigation Items -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'store:home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'store:product_list' %}">Products</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="categoriesDropdown">
+                            {% for category in categories %}
+                                <li><a class="dropdown-item" href="{% url 'store:product_list' %}?category={{ category.slug }}">{{ category.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+                
+                <!-- Search and User Actions -->
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link search-toggle" href="#" aria-label="Search">
+                            <i class="fas fa-search"></i>
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user me-1"></i>{{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{% url 'users:profile' %}"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-shopping-bag me-2"></i>My Orders</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'users:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-primary text-white ms-2 px-3 rounded-pill hover-glow" href="{% url 'users:signup' %}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item ms-2 position-relative">
+                        <a class="nav-link" href="{% url 'store:cart_detail' %}" aria-label="Shopping Cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            {% if cart_count %}
+                                <span class="cart-counter">{{ cart_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay">
+        <div class="search-container">
+            <form class="search-form" method="get" action="{% url 'store:product_list' %}">
+                <div class="position-relative">
+                    <input type="text" name="search" class="search-input form-control form-control-lg shadow-sm" placeholder="Search products..." autocomplete="off">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+            <div class="search-results mt-4"></div>
+            <button type="button" class="search-close" aria-label="Close search">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="floating-notifications">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm">
+                    {% if message.tags == 'success' %}<i class="fas fa-check-circle me-2"></i>{% endif %}
+                    {% if message.tags == 'error' or message.tags == 'danger' %}<i class="fas fa-exclamation-circle me-2"></i>{% endif %}
+                    {% if message.tags == 'warning' %}<i class="fas fa-exclamation-triangle me-2"></i>{% endif %}
+                    {% if message.tags == 'info' %}<i class="fas fa-info-circle me-2"></i>{% endif %}
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="footer-brand gradient-text mb-3">
+                        <i class="fas fa-microchip me-2"></i>METRA
+                    </div>
+                    <p class="text-light opacity-75">Your one-stop shop for all things tech. Quality products, competitive prices, and excellent service.</p>
+                    <div class="footer-social mt-4">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="text-white fw-semibold mb-3">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-light opacity-75 hover-opacity-100"><i class="fas fa-angle-right me-2"></i>About Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-light opacity-75 hover-opacity-100"><i class="fas fa-angle-right me-2"></i>Contact Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-light opacity-75 hover-opacity-100"><i class="fas fa-angle-right me-2"></i>Privacy Policy</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-light opacity-75 hover-opacity-100"><i class="fas fa-angle-right me-2"></i>Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="text-white fw-semibold mb-3">Categories</h5>
+                    <ul class="list-unstyled">
+                        {% for category in categories|slice:":4" %}
+                            <li class="mb-2"><a href="{% url 'store:product_list' %}?category={{ category.slug }}" class="text-decoration-none text-light opacity-75 hover-opacity-100"><i class="fas fa-angle-right me-2"></i>{{ category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5 class="text-white fw-semibold mb-3">Newsletter</h5>
+                    <p class="text-light opacity-75">Subscribe to our newsletter for updates and exclusive offers!</p>
+                    <form class="mt-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Your email address" aria-label="Email address">
+                            <button class="btn btn-primary btn-shine" type="submit">Subscribe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr class="mt-4 mb-3 border-light opacity-10">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-light opacity-75">&copy; {% now "Y" %} METRA. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                    <img src="{% static 'images/payment-methods.png' %}" alt="Payment methods" height="30" onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="btn-shine" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/cart.js' %}"></script>
+    <script src="{% static 'js/infinite-loader.js' %}"></script>
+    <script src="{% static 'js/image-loader.js' %}"></script>
+    <script src="{% static 'js/form-validation.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

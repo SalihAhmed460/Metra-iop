@@ -1,0 +1,143 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Login - METRA{% endblock %}
+
+{% block content %}
+<section class="section-blue py-5">
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Login</li>
+            </ol>
+        </nav>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-5">
+                <div class="card card-white border-0 shadow-sm fade-in">
+                    <div class="card-header bg-white p-4 text-center border-0">
+                        <h3 class="gradient-text mb-0">Welcome Back</h3>
+                        <p class="text-muted mt-2">Login to access your account</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Login Form -->
+                        <form method="post" data-validate>
+                            {% csrf_token %}
+                            
+                            <!-- Display form errors if any -->
+                            {% if form.errors %}
+                                <div class="alert alert-primary alert-dismissible fade show">
+                                    <p class="mb-0"><i class="fas fa-info-circle me-2"></i>Please correct the errors below.</p>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                                
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger">
+                                        {% for error in form.non_field_errors %}
+                                            <p class="mb-0">{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            
+                            <!-- Username Field -->
+                            <div class="mb-4 form-icon-group">
+                                <i class="fas fa-user"></i>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Enter your username</small>
+                            </div>
+                            
+                            <!-- Password Field -->
+                            <div class="mb-4 form-icon-group">
+                                <i class="fas fa-lock"></i>
+                                {{ form.password }}
+                                {% if form.password.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Remember Me Checkbox -->
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember-me" name="remember_me">
+                                    <label class="form-check-label" for="remember-me">Remember me</label>
+                                </div>
+                                <a href="#" class="text-primary text-decoration-none">Forgot password?</a>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg btn-shine">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </button>
+                            </div>
+                            
+                            <!-- Sign Up Link -->
+                            <p class="text-center">
+                                Don't have an account? <a href="{% url 'users:signup' %}" class="text-decoration-none">Sign up</a>
+                            </p>
+                        </form>
+                    </div>
+                    
+                    <!-- Social Login Section -->
+                    <div class="card-footer bg-white py-4 border-0">
+                        <p class="text-center mb-3">Or login with</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="#" class="btn btn-google" aria-label="Login with Google">
+                                <i class="fab fa-google"></i>
+                            </a>
+                            <a href="#" class="btn btn-facebook" aria-label="Login with Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="btn btn-twitter" aria-label="Login with Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Notice -->
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <i class="fas fa-shield-alt me-2"></i>Your information is secured using encryption
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add proper attributes to form fields
+        const usernameField = document.querySelector('#id_username');
+        if (usernameField) {
+            usernameField.className = 'form-control';
+            usernameField.placeholder = 'Username';
+            usernameField.autocomplete = 'username';
+        }
+
+        const passwordField = document.querySelector('#id_password');
+        if (passwordField) {
+            passwordField.className = 'form-control';
+            passwordField.placeholder = 'Password';
+            passwordField.autocomplete = 'current-password';
+        }
+        
+        // Add animation to the form
+        const card = document.querySelector('.card');
+        if (card) {
+            setTimeout(() => {
+                card.classList.add('show');
+            }, 100);
+        }
+    });
+</script>
+{% endblock %}

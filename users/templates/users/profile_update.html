@@ -1,0 +1,237 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Edit Profile - METRA{% endblock %}
+
+{% block content %}
+<section class="section-blue py-5">
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'users:profile' %}">My Profile</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Profile</li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card card-white border-0 shadow-sm fade-in">
+                    <div class="card-header bg-white p-4 border-0">
+                        <h3 class="gradient-text mb-0">Edit Your Profile</h3>
+                        <p class="text-muted mt-2">Update your personal information and profile preferences</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="post" enctype="multipart/form-data" data-validate>
+                            {% csrf_token %}
+
+                            <!-- Display form errors if any -->
+                            {% if user_form.errors or profile_form.errors %}
+                                <div class="alert alert-primary alert-dismissible fade show mb-4">
+                                    <p class="mb-0"><i class="fas fa-info-circle me-2"></i>Please correct the errors below.</p>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endif %}
+
+                            <div class="row">
+                                <!-- Profile Image Section -->
+                                <div class="col-md-4 mb-4 text-center">
+                                    <div class="profile-image-container mb-3">
+                                        {% if user.profile.image %}
+                                            <img src="{{ user.profile.image.url }}" alt="{{ user.username }}" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;" id="preview-image">
+                                        {% else %}
+                                            <img src="{% static 'images/default-profile.png' %}" alt="{{ user.username }}" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;" id="preview-image" onerror="this.src='https://via.placeholder.com/150/f0f7ff/0d6efd?text={{ user.username|slice:':1'|upper }}'; this.onerror=null;">
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ profile_form.image.id_for_label }}" class="form-label fw-medium">Profile Picture</label>
+                                        {{ profile_form.image }}
+                                        {% if profile_form.image.errors %}
+                                            <div class="invalid-feedback d-block">{{ profile_form.image.errors.0 }}</div>
+                                        {% endif %}
+                                        <div class="form-text">Upload a square image for best results (max 2MB)</div>
+                                    </div>
+                                </div>
+
+                                <!-- User Information Forms -->
+                                <div class="col-md-8">
+                                    <h5 class="mb-3 fw-semibold">Personal Information</h5>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-icon-group">
+                                                <i class="fas fa-user"></i>
+                                                {{ user_form.first_name }}
+                                                <label for="{{ user_form.first_name.id_for_label }}" class="visually-hidden">First Name</label>
+                                            </div>
+                                            {% if user_form.first_name.errors %}
+                                                <div class="invalid-feedback d-block">{{ user_form.first_name.errors.0 }}</div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Your first name</small>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-icon-group">
+                                                <i class="fas fa-user"></i>
+                                                {{ user_form.last_name }}
+                                                <label for="{{ user_form.last_name.id_for_label }}" class="visually-hidden">Last Name</label>
+                                            </div>
+                                            {% if user_form.last_name.errors %}
+                                                <div class="invalid-feedback d-block">{{ user_form.last_name.errors.0 }}</div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Your last name</small>
+                                        </div>
+                                        
+                                        <div class="col-md-12">
+                                            <div class="form-icon-group">
+                                                <i class="fas fa-envelope"></i>
+                                                {{ user_form.email }}
+                                                <label for="{{ user_form.email.id_for_label }}" class="visually-hidden">Email</label>
+                                            </div>
+                                            {% if user_form.email.errors %}
+                                                <div class="invalid-feedback d-block">{{ user_form.email.errors.0 }}</div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">We'll never share your email with anyone else</small>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-4">
+                                    
+                                    <h5 class="mb-3 fw-semibold">Additional Information</h5>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-icon-group">
+                                                <i class="fas fa-phone"></i>
+                                                {{ profile_form.phone }}
+                                                <label for="{{ profile_form.phone.id_for_label }}" class="visually-hidden">Phone</label>
+                                            </div>
+                                            {% if profile_form.phone.errors %}
+                                                <div class="invalid-feedback d-block">{{ profile_form.phone.errors.0 }}</div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Your contact number</small>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-icon-group">
+                                                <i class="fas fa-birthday-cake"></i>
+                                                {{ profile_form.birth_date }}
+                                                <label for="{{ profile_form.birth_date.id_for_label }}" class="visually-hidden">Birth Date</label>
+                                            </div>
+                                            {% if profile_form.birth_date.errors %}
+                                                <div class="invalid-feedback d-block">{{ profile_form.birth_date.errors.0 }}</div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Your date of birth</small>
+                                        </div>
+                                        
+                                        <div class="col-md-12">
+                                            <div class="form-floating">
+                                                {{ profile_form.bio }}
+                                                <label for="{{ profile_form.bio.id_for_label }}">Biography</label>
+                                            </div>
+                                            {% if profile_form.bio.errors %}
+                                                <div class="invalid-feedback d-block">{{ profile_form.bio.errors.0 }}</div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Tell us a bit about yourself (max 500 characters)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end mt-4">
+                                <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary me-2">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-shine">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Privacy Notice -->
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <i class="fas fa-shield-alt me-2"></i>Your profile information is protected by our privacy policy
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image preview functionality
+        const imageInput = document.querySelector('#{{ profile_form.image.id_for_label }}');
+        const previewImage = document.querySelector('#preview-image');
+        
+        if (imageInput && previewImage) {
+            imageInput.className = 'form-control';
+            
+            imageInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+        
+        // Apply proper styling to form fields
+        const firstNameField = document.querySelector('#{{ user_form.first_name.id_for_label }}');
+        if (firstNameField) {
+            firstNameField.className = 'form-control';
+            firstNameField.placeholder = 'First Name';
+        }
+        
+        const lastNameField = document.querySelector('#{{ user_form.last_name.id_for_label }}');
+        if (lastNameField) {
+            lastNameField.className = 'form-control';
+            lastNameField.placeholder = 'Last Name';
+        }
+        
+        const emailField = document.querySelector('#{{ user_form.email.id_for_label }}');
+        if (emailField) {
+            emailField.className = 'form-control';
+            emailField.placeholder = 'Email Address';
+        }
+        
+        const phoneField = document.querySelector('#{{ profile_form.phone.id_for_label }}');
+        if (phoneField) {
+            phoneField.className = 'form-control';
+            phoneField.placeholder = 'Phone Number';
+        }
+        
+        const birthDateField = document.querySelector('#{{ profile_form.birth_date.id_for_label }}');
+        if (birthDateField) {
+            birthDateField.className = 'form-control';
+            birthDateField.type = 'date';
+        }
+        
+        const bioField = document.querySelector('#{{ profile_form.bio.id_for_label }}');
+        if (bioField) {
+            bioField.className = 'form-control';
+            bioField.rows = 3;
+            bioField.placeholder = 'Tell us a bit about yourself...';
+        }
+        
+        // Add animation to the form
+        const card = document.querySelector('.card');
+        if (card) {
+            setTimeout(() => {
+                card.classList.add('show');
+            }, 100);
+        }
+    });
+</script>
+{% endblock %}

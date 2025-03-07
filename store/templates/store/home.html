@@ -1,0 +1,210 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}METRA - Online Tech Store{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section position-relative">
+    <div class="hero-slider">
+        <div class="hero-slide bg-primary text-white" style="background-image: url('{% static 'images/hero-bg.jpg' %}');">
+            <div class="container">
+                <div class="row align-items-center min-vh-75">
+                    <div class="col-lg-6 py-5">
+                        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInUp">Welcome to METRA</h1>
+                        <p class="lead mb-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">Your one-stop destination for all your tech needs. Browse our extensive collection of laptops, smartphones, and accessories.</p>
+                        <div class="animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                            <a href="{% url 'store:product_list' %}" class="btn btn-lg btn-shine btn-light">Shop Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="section-title text-center mb-5 fade-in">
+            <h2 class="gradient-text">Browse Categories</h2>
+            <p class="text-muted">Discover our wide range of product categories</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for category in categories %}
+                <div class="col-6 col-md-4 col-lg-3 fade-in" style="animation-delay: {{ forloop.counter0 }}00ms">
+                    <a href="{% url 'store:category_list' category.slug %}" class="text-decoration-none">
+                        <div class="card category-card h-100 card-shine">
+                            <div class="category-img-wrapper">
+                                {% if category.image %}
+                                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="card-img-top category-img">
+                                {% else %}
+                                    <img src="{% static 'images/category-placeholder.jpg' %}" alt="{{ category.name }}" class="card-img-top category-img">
+                                {% endif %}
+                            </div>
+                            <div class="card-body text-center">
+                                <h5 class="card-title mb-0">{{ category.name }}</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">No categories available at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="section-blue py-5">
+    <div class="container">
+        <div class="section-title text-center mb-5 fade-in">
+            <h2 class="gradient-text">Featured Products</h2>
+            <p class="text-muted">Check out our most popular tech products</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for product in products %}
+                <div class="col-6 col-md-4 col-lg-3 slide-in" style="animation-delay: {{ forloop.counter0 }}00ms">
+                    <div class="card product-card h-100 card-shine">
+                        <div class="position-relative">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top" style="height: 200px; object-fit: contain;">
+                            {% else %}
+                                <img src="{% static 'images/no-image.png' %}" alt="No image available" class="card-img-top" style="height: 200px; object-fit: contain;">
+                            {% endif %}
+                            
+                            {% if product.is_on_sale %}
+                                <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 m-2 rounded-pill small">Sale</span>
+                            {% endif %}
+                            
+                            <button class="position-absolute bottom-0 end-0 btn btn-primary btn-sm m-2 quick-add-btn" data-product-id="{{ product.id }}">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-1">{{ product.name }}</h5>
+                            <p class="text-muted small mb-2">{{ product.category.name }}</p>
+                            
+                            <!-- Rating -->
+                            <div class="mb-2">
+                                <div class="text-warning">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= product.average_rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="text-muted ms-1 small">({{ product.reviews.count }})</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <span class="product-price">
+                                    {% if product.is_on_sale %}
+                                        <span class="text-decoration-line-through text-muted me-1">${{ product.price }}</span>
+                                        <span class="text-danger">${{ product.sale_price }}</span>
+                                    {% else %}
+                                        ${{ product.price }}
+                                    {% endif %}
+                                </span>
+                                <a href="{{ product.get_absolute_url }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">No featured products available at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5 fade-in">
+            <a href="{% url 'store:product_list' %}" class="btn btn-lg btn-primary btn-shine">View All Products</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3 fade-in">
+                <div class="text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-truck fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold">Free Shipping</h5>
+                    <p class="text-muted mb-0">On orders over $50</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3 fade-in" style="animation-delay: 100ms">
+                <div class="text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-undo fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold">30 Days Return</h5>
+                    <p class="text-muted mb-0">Money back guarantee</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3 fade-in" style="animation-delay: 200ms">
+                <div class="text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-lock fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold">Secure Payment</h5>
+                    <p class="text-muted mb-0">100% secure checkout</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3 fade-in" style="animation-delay: 300ms">
+                <div class="text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-headset fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold">24/7 Support</h5>
+                    <p class="text-muted mb-0">Dedicated customer service</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h2 class="mb-4">Subscribe to Our Newsletter</h2>
+                <p class="mb-4">Stay updated with our latest products, offers, and tech news</p>
+                
+                <form class="newsletter-form">
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control form-control-lg" placeholder="Your email address" aria-label="Your email address">
+                        <button class="btn btn-light btn-lg" type="button">Subscribe</button>
+                    </div>
+                    <p class="small mb-0">We respect your privacy and will never share your details</p>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Toast Container for Notifications -->
+<div class="toast-container position-fixed top-0 end-0 p-3"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize any home page specific JavaScript here
+    });
+</script>
+{% endblock %}
