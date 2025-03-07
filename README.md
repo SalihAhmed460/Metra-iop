@@ -26,7 +26,7 @@ METRA is a Django-based e-commerce platform for selling tech products online. Th
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/metra.git
+git clone https://github.com/SalihAhmed460/metra.git
 cd metra
 ```
 
